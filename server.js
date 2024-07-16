@@ -1,55 +1,68 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const Player = require('./models/player');
 
 const app = express();
 const port = 3000;
 
-// Middleware
 app.use(bodyParser.json());
 
-// Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/yourDatabaseName', { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected...'))
     .catch(err => console.log(err));
 
-// Define a Mongoose model
-const ItemSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    date: {
-        type: Date,
-        default: Date.now
+// Add a player
+app.post('/api/players', (req, res) => {
+    const newPlayer = new Player(req.body);
+    newPlayer.save()
+        .then(player => res.json(player))
+        .catch(err => res.status(400).json({ error: err.message }));
+});
+
+// Update a player
+app.put('/api/players/:id', (req, res) => {
+    Player.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        .then(player => res.json(player))
+        .catch(err => res.status(400).json({ error: err.message }));
+});
+
+// Delete a player
+app.delete('/api/players/:id', (req, res) => {
+    Player.findByIdAndDelete(req.params.id)
+        .then(() => res.json({ success: true }))
+        .catch(err => res.status(400).json({ error: err.message }));
+});
+
+// Perform queries
+app.post('/api/players/query', (req, res) => {
+    const { queryType, queryData } = req.body;
+    switch (queryType) {
+        case 'findByTeam':
+            Player.find({ team: queryData.team })
+                .then(players => res.json(players))
+                .catch(err => res.status(400).json({ error: err.message }));
+            break;
+        case 'findByPosition':
+            Player.find({ position: queryData.position })
+                .then(players => res.json(players))
+                .catch(err => res.status(400).json({ error: err.message }));
+            break;
+        case 'findByAge':
+            Player.find({ age: queryData.age })
+                .then(players => res.json(players))
+                .catch(err => res.status(400).json({ error: err.message }));
+            break;
+        case 'findTopScorers':
+            Player.find().sort({ goals: -1 }).limit(queryData.limit)
+                .then(players => res.json(players))
+                .catch(err => res.status(400).json({ error: err.message }));
+            break;
+        default:
+            res.status(400).json({ error: 'Invalid query type' });
     }
 });
 
-const Item = mongoose.model('Item', ItemSchema);
+app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
 
-// API Endpoints
-app.get('/', (req, res) => res.send('Hello World!'));
-
-app.get('/api/items', (req, res) => {
-    Item.find()
-        .then(items => res.json(items))
-        .catch(err => res.status(404).json({ noitemsfound: 'No items found' }));
-});
-
-app.post('/api/items', (req, res) => {
-    const newItem = new Item({
-        name: req.body.name
-    });
-
-    newItem.save().then(item => res.json(item));
-});
-
-app.delete('/api/items/:id', (req, res) => {
-    Item.findById(req.params.id)
-        .then(item => item.remove().then(() => res.json({ success: true })))
-        .catch(err => res.status(404).json({ itemnotfound: 'No item found' }));
-});
-
-const server = app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
-
-module.exports = server;
+module.exports = app;
