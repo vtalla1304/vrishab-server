@@ -1,5 +1,5 @@
+
 import { Component, OnInit } from '@angular/core';
-import { PlayerService, Player } from '../player.service';
 
 @Component({
   selector: 'app-player-list',
@@ -7,23 +7,11 @@ import { PlayerService, Player } from '../player.service';
   styleUrls: ['./player-list.component.css']
 })
 export class PlayerListComponent implements OnInit {
-  players: Player[] = [];
+  players = [];
 
-  constructor(private playerService: PlayerService) { }
+  constructor() {}
 
-  ngOnInit(): void {
-    this.getPlayers();
-  }
+  ngOnInit() { this.players = [{name: "Player1", position: "Forward"}, {name: "Player2", position: "Guard"}]; }
 
-  getPlayers(): void {
-    this.playerService.getPlayers().subscribe(players => this.players = players);
-  }
-
-  deletePlayer(id: string): void {
-    this.playerService.deletePlayer(id).subscribe(() => this.getPlayers());
-  }
-
-  editPlayer(player: Player): void {
-    // Logic to edit player can be added here
-  }
+  deletePlayer(index: number) { this.players.splice(index, 1); }
 }

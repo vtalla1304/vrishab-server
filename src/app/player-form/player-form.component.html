@@ -1,20 +1,8 @@
-<div>
-  <h2>Add/Edit Player</h2>
-  <form [formGroup]="playerForm" (ngSubmit)="onSubmit()">
-    <label>Name:</label>
-    <input formControlName="name">
-    <label>Team:</label>
-    <input formControlName="team">
-    <label>Position:</label>
-    <input formControlName="position">
-    <label>Touchdown Passes:</label>
-    <input type="number" formControlName="touchdownPasses">
-    <label>Rushing Yards:</label>
-    <input type="number" formControlName="rushingYards">
-    <label>Field Goals:</label>
-    <input type="number" formControlName="fieldGoals">
-    <label>Sacks:</label>
-    <input type="number" formControlName="sacks">
-    <button type="submit">Save</button>
-  </form>
-</div>
+
+<form (ngSubmit)="addPlayer()">
+  <label for="name">Name:</label>
+  <input type="text" id="name" [(ngModel)]="player.name" name="name" required>
+  <label for="position">Position:</label>
+  <input type="text" id="position" [(ngModel)]="player.position" name="position" required>
+  <button type="submit">Add Player</button>
+</form>
